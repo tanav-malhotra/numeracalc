@@ -1,6 +1,6 @@
 [package]
 name = "numeracalc"
-version = "1.0.1"
+version = "1.1.1"
 edition = "2021"
 authors = ["Tanav Malhotra"]
 description = "An easy to use CLI tool to calculate the values of words according to Numerology."
