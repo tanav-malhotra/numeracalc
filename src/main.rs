@@ -451,7 +451,7 @@ fn main() {
                 values.clear();
             }
         }
-    } else if args.fast || args.json {
+    } else if args.fast || args.json || cfg!(windows) {
         if args.json {
             let mut json_output: Vec<Value> = vec![];
             let mut total = 0;
@@ -703,26 +703,28 @@ fn main() {
 
 /// Set up a Ctrl+C signal handler
 fn setup_ctrl_c_handler() {
-    // Use signal-hook crate to handle Ctrl+C signal
-    let mut signals = signal_hook::iterator::Signals::new(&[signal_hook::consts::SIGINT])
-        .expect("error: Failed to setup Ctrl+C handler");
+    if !cfg!(windows) {
+        // Use signal-hook crate to handle Ctrl+C signal
+        let mut signals = signal_hook::iterator::Signals::new(&[signal_hook::consts::SIGINT])
+            .expect("error: Failed to setup Ctrl+C handler");
 
-    // Spawn a separate thread to handle the signal
-    thread::spawn(move || {
-        for _ in signals.forever() {
-            // Clear the terminal again before exiting
-            if let Err(err) = execute!(io::stdout(), terminal::Clear(terminal::ClearType::All)) {
-                eprintln!("error: Failed to clear terminal: {err}");
-                process::exit(1);
+        // Spawn a separate thread to handle the signal
+        thread::spawn(move || {
+            for _ in signals.forever() {
+                // Clear the terminal again before exiting
+                if let Err(err) = execute!(io::stdout(), terminal::Clear(terminal::ClearType::All)) {
+                    eprintln!("error: Failed to clear terminal: {err}");
+                    process::exit(1);
+                }
+                // Leave alternate screen buffer
+                if let Err(err) = execute!(io::stdout(), LeaveAlternateScreen) {
+                    eprintln!("error: Failed to leave alternate buffer: {err}");
+                    process::exit(1);
+                }
+                process::exit(0);
             }
-            // Leave alternate screen buffer
-            if let Err(err) = execute!(io::stdout(), LeaveAlternateScreen) {
-                eprintln!("error: Failed to leave alternate buffer: {err}");
-                process::exit(1);
-            }
-            process::exit(0);
-        }
-    });
+        });
+    }
 }
 
 /// Read the Words from <stdin>
