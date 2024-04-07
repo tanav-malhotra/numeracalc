@@ -1,0 +1,28 @@
+[package]
+name = "numeracalc"
+version = "0.1.0"
+edition = "2021"
+authors = ["Tanav Malhotra"]
+description = "An easy to use CLI tool to calculate the values of words according to Numerology."
+keywords = ["word", "calculator", "numeracalc", "numerology", "value"]
+categories = ["command-line-utilities"]
+license = "GPL-3"
+homepage = "https://github.com/tanav-malhotra/numeracalc"
+repository = "https://github.com/tanav-malhotra/numeracalc"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.5.4", features = ["derive"] }
+clap-man = "0.0.0"
+prettytable = "0.10.0"
+phf = { version = "0.11.2", features = ["macros"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.115"
+signal-hook = "0.3.17"
+crossterm = "0.27.0"
+atty = "0.2.14"
+
+[profile.release]
+strip = true
+overflow-checks = true
