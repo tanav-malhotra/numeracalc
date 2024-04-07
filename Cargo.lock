@@ -318,7 +318,7 @@ dependencies = [
 
 [[package]]
 name = "numeracalc"
-version = "0.1.0"
+version = "1.2.1"
 dependencies = [
  "atty",
  "clap",
