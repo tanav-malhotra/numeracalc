@@ -558,173 +558,175 @@ fn main() {
         }
         output_buffer.flush().unwrap();
     } else {
-        // Enter alternate screen buffer
-        execute!(io::stdout(), EnterAlternateScreen).expect("error: Failed to create new screen buffer");
-        // Clear the terminal
-        execute!(io::stdout(), terminal::Clear(terminal::ClearType::All))
-            .expect("error: Failed to clear screen");
+        #[cfg(not(target_os = "windows"))]
+        {
+            // Enter alternate screen buffer
+            execute!(io::stdout(), EnterAlternateScreen).expect("error: Failed to create new screen buffer");
+            // Clear the terminal
+            execute!(io::stdout(), terminal::Clear(terminal::ClearType::All))
+                .expect("error: Failed to clear screen");
 
-        let mut words = args.words.clone();
-        setup_ctrl_c_handler();
-        let ascii_art = r#"
-         _   _ _   _ __  __ _____ ____      _    ____    _    _     ____
-        | \ | | | | |  \/  | ____|  _ \    / \  / ___|  / \  | |   / ___|
-        |  \| | | | | |\/| |  _| | |_) |  / _ \| |     / _ \ | |  | |
-        | |\  | |_| | |  | | |___|  _ <  / ___ \ |___ / ___ \| |__| |___
-        |_| \_|\___/|_|  |_|_____|_| \_\/_/   \_\____/_/   \_\_____\____|
-        "#;
-        if decorations {
-            writeln!(output_buffer, "{}\n\n", ascii_art.green().bold()).unwrap();
-        } else {
-            writeln!(output_buffer, "{}\n\n", ascii_art.green()).unwrap();
-        }
-        if !args.quiet {
+            let mut words = args.words.clone();
+            setup_ctrl_c_handler();
+            let ascii_art = r#"
+             _   _ _   _ __  __ _____ ____      _    ____    _    _     ____
+            | \ | | | | |  \/  | ____|  _ \    / \  / ___|  / \  | |   / ___|
+            |  \| | | | | |\/| |  _| | |_) |  / _ \| |     / _ \ | |  | |
+            | |\  | |_| | |  | | |___|  _ <  / ___ \ |___ / ___ \| |__| |___
+            |_| \_|\___/|_|  |_|_____|_| \_\/_/   \_\____/_/   \_\_____\____|
+            "#;
             if decorations {
-                writeln!(
-                    output_buffer,
-                    "{}",
-                    "Note: Press Ctrl+C to exit.".dark_yellow().italic()
-                )
-                .unwrap();
+                writeln!(output_buffer, "{}\n\n", ascii_art.green().bold()).unwrap();
             } else {
-                writeln!(
-                    output_buffer,
-                    "{}",
-                    "Note: Press Ctrl+C to exit.".dark_yellow()
-                ).unwrap();
+                writeln!(output_buffer, "{}\n\n", ascii_art.green()).unwrap();
             }
-        }
-        loop {
-            for word in &words {
-                let mut value: u32 = 0;
-                let mut letter_values: Vec<u8> = vec![];
-                for letter in word.chars() {
-                    let val = evaluate(letter);
-                    letter_values.push(val);
-                    value += val as u32;
-                }
-                values.push(value);
-                if !args.raw {
-                    if decorations {
-                        writeln!(
-                            output_buffer,
-                            "{}",
-                            format!("Value of {word:?}: {value}").blue().bold()
-                        )
-                        .unwrap();
-                    } else {
-                        writeln!(
-                            output_buffer,
-                            "{}",
-                            format!("Value of {word:?}: {value}").blue()
-                        ).unwrap();
-                    }
-                } else {
-                    if decorations {
-                        writeln!(
-                            output_buffer,
-                            "{}",
-                            format!("{word:?}: {value}\n").blue().bold()
-                        )
-                        .unwrap();
-                    } else {
-                        writeln!(
-                            output_buffer,
-                            "{}",
-                            format!("{word:?}: {value}\n").blue()
-                        ).unwrap();
-                    }
-                }
-                if !args.less && !args.raw {
-                    for (idx, letter) in word.chars().enumerate() {
-                        writeln!(
-                            output_buffer,
-                            "{}",
-                            format!("{letter:?}: {}", letter_values[idx]).dark_cyan()
-                        )
-                        .unwrap();
-                    }
-                }
-            }
-
-            if !args.no_total {
-                if !args.raw {
-                    if decorations {
-                        writeln!(output_buffer, "{}", "-".repeat(20).blue().bold()).unwrap();
-                    } else {
-                        writeln!(output_buffer, "{}", "-".repeat(20).blue()).unwrap();
-                    }
-                }
-                let mut total = 0;
-                for value in &values {
-                    total += value;
-                }
+            if !args.quiet {
                 if decorations {
                     writeln!(
                         output_buffer,
                         "{}",
-                        format!("Total Value: {total}").blue().bold()
+                        "Note: Press Ctrl+C to exit.".dark_yellow().italic()
                     )
-                        .unwrap();
+                    .unwrap();
                 } else {
                     writeln!(
                         output_buffer,
                         "{}",
-                        format!("Total Value: {total}").blue()
-                    )
-                        .unwrap();
+                        "Note: Press Ctrl+C to exit.".dark_yellow()
+                    ).unwrap();
                 }
             }
+            loop {
+                for word in &words {
+                    let mut value: u32 = 0;
+                    let mut letter_values: Vec<u8> = vec![];
+                    for letter in word.chars() {
+                        let val = evaluate(letter);
+                        letter_values.push(val);
+                        value += val as u32;
+                    }
+                    values.push(value);
+                    if !args.raw {
+                        if decorations {
+                            writeln!(
+                                output_buffer,
+                                "{}",
+                                format!("Value of {word:?}: {value}").blue().bold()
+                            )
+                            .unwrap();
+                        } else {
+                            writeln!(
+                                output_buffer,
+                                "{}",
+                                format!("Value of {word:?}: {value}").blue()
+                            ).unwrap();
+                        }
+                    } else {
+                        if decorations {
+                            writeln!(
+                                output_buffer,
+                                "{}",
+                                format!("{word:?}: {value}\n").blue().bold()
+                            )
+                            .unwrap();
+                        } else {
+                            writeln!(
+                                output_buffer,
+                                "{}",
+                                format!("{word:?}: {value}\n").blue()
+                            ).unwrap();
+                        }
+                    }
+                    if !args.less && !args.raw {
+                        for (idx, letter) in word.chars().enumerate() {
+                            writeln!(
+                                output_buffer,
+                                "{}",
+                                format!("{letter:?}: {}", letter_values[idx]).dark_cyan()
+                            )
+                            .unwrap();
+                        }
+                    }
+                }
 
-            words.clear();
-            if !args.raw && !args.less {
-                write!(output_buffer, "Enter words separated by spaces: ").unwrap();
-            } else if args.less {
-                write!(output_buffer, ": ").unwrap();
-            } else {
-                write!(output_buffer, ":").unwrap();
+                if !args.no_total {
+                    if !args.raw {
+                        if decorations {
+                            writeln!(output_buffer, "{}", "-".repeat(20).blue().bold()).unwrap();
+                        } else {
+                            writeln!(output_buffer, "{}", "-".repeat(20).blue()).unwrap();
+                        }
+                    }
+                    let mut total = 0;
+                    for value in &values {
+                        total += value;
+                    }
+                    if decorations {
+                        writeln!(
+                            output_buffer,
+                            "{}",
+                            format!("Total Value: {total}").blue().bold()
+                        )
+                            .unwrap();
+                    } else {
+                        writeln!(
+                            output_buffer,
+                            "{}",
+                            format!("Total Value: {total}").blue()
+                        )
+                            .unwrap();
+                    }
+                }
+
+                words.clear();
+                if !args.raw && !args.less {
+                    write!(output_buffer, "Enter words separated by spaces: ").unwrap();
+                } else if args.less {
+                    write!(output_buffer, ": ").unwrap();
+                } else {
+                    write!(output_buffer, ":").unwrap();
+                }
+
+                output_buffer.flush().unwrap();
+                let mut input = String::new();
+                stdin().read_line(&mut input).expect("error: Failed to read line");
+
+                // Trim the trailing newline character
+                input = input.trim().to_string();
+
+                // Split the input string into multiple strings
+                words = input.split_whitespace().map(|s| s.to_string()).collect();
+
+                // Reset values
+                values.clear();
             }
-
-            output_buffer.flush().unwrap();
-            let mut input = String::new();
-            stdin().read_line(&mut input).expect("error: Failed to read line");
-
-            // Trim the trailing newline character
-            input = input.trim().to_string();
-
-            // Split the input string into multiple strings
-            words = input.split_whitespace().map(|s| s.to_string()).collect();
-
-            // Reset values
-            values.clear();
         }
     }
 }
 
 /// Set up a Ctrl+C signal handler
+#[cfg(not(target_os = "windows"))]
 fn setup_ctrl_c_handler() {
-    if !cfg!(windows) {
-        // Use signal-hook crate to handle Ctrl+C signal
-        let mut signals = signal_hook::iterator::Signals::new(&[signal_hook::consts::SIGINT])
-            .expect("error: Failed to setup Ctrl+C handler");
+    // Use signal-hook crate to handle Ctrl+C signal
+    let mut signals = signal_hook::iterator::Signals::new(&[signal_hook::consts::SIGINT])
+        .expect("error: Failed to setup Ctrl+C handler");
 
-        // Spawn a separate thread to handle the signal
-        thread::spawn(move || {
-            for _ in signals.forever() {
-                // Clear the terminal again before exiting
-                if let Err(err) = execute!(io::stdout(), terminal::Clear(terminal::ClearType::All)) {
-                    eprintln!("error: Failed to clear terminal: {err}");
-                    process::exit(1);
-                }
-                // Leave alternate screen buffer
-                if let Err(err) = execute!(io::stdout(), LeaveAlternateScreen) {
-                    eprintln!("error: Failed to leave alternate buffer: {err}");
-                    process::exit(1);
-                }
-                process::exit(0);
+    // Spawn a separate thread to handle the signal
+    thread::spawn(move || {
+        for _ in signals.forever() {
+            // Clear the terminal again before exiting
+            if let Err(err) = execute!(io::stdout(), terminal::Clear(terminal::ClearType::All)) {
+                eprintln!("error: Failed to clear terminal: {err}");
+                process::exit(1);
             }
-        });
-    }
+            // Leave alternate screen buffer
+            if let Err(err) = execute!(io::stdout(), LeaveAlternateScreen) {
+                eprintln!("error: Failed to leave alternate buffer: {err}");
+                process::exit(1);
+            }
+            process::exit(0);
+        }
+    });
 }
 
 /// Read the Words from <stdin>
