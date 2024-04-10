@@ -1,16 +1,15 @@
+use atty::Stream;
 use clap::Parser;
 use crossterm::{
     execute,
-    style::{Stylize},
+    style::Stylize,
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
-
 };
-use atty::Stream;
 use prettytable::{format, Cell, Row, Table};
 use serde_json::{json, Value};
 use std::{
     collections::HashMap,
-    io::{self, BufRead, BufReader, BufWriter, Write, stdin},
+    io::{self, stdin, BufRead, BufReader, BufWriter, Write},
     process, thread,
 };
 
@@ -18,7 +17,7 @@ mod args;
 mod data;
 mod evaluate;
 
-use args::{CLI, Color, Decorations};
+use args::{Color, Decorations, CLI};
 use data::VALUE_TABLE;
 use evaluate::evaluate;
 
@@ -29,16 +28,20 @@ fn main() {
 
     match args.color {
         Color::Auto => {}
-        Color::Always => {crossterm::style::force_color_output(true)}
-        Color::Never => {crossterm::style::force_color_output(false)}
+        Color::Always => crossterm::style::force_color_output(true),
+        Color::Never => crossterm::style::force_color_output(false),
     }
 
     let mut decorations = true;
 
     match args.decorations {
         Decorations::Auto => {}
-        Decorations::Always => {decorations = true;}
-        Decorations::Never => {decorations = false;}
+        Decorations::Always => {
+            decorations = true;
+        }
+        Decorations::Never => {
+            decorations = false;
+        }
     }
 
     let decorations = decorations;
@@ -79,7 +82,7 @@ fn main() {
                         "Note: Both lowercase and uppercase letters hold equivalent value."
                             .dark_yellow()
                     )
-                        .unwrap();
+                    .unwrap();
                 }
             }
         } else {
@@ -108,9 +111,7 @@ fn main() {
                         ]));
                     } else {
                         table.add_row(Row::new(vec![
-                            Cell::new(
-                                format!("{}", &character.to_string().dark_cyan()).as_str(),
-                            ),
+                            Cell::new(format!("{}", &character.to_string().dark_cyan()).as_str()),
                             Cell::new(format!("{}", &value.to_string().blue()).as_str()),
                         ]));
                     }
@@ -129,9 +130,7 @@ fn main() {
                         ]));
                     } else {
                         table.add_row(Row::new(vec![
-                            Cell::new(
-                                format!("{}", &character.to_string().dark_cyan()).as_str(),
-                            ),
+                            Cell::new(format!("{}", &character.to_string().dark_cyan()).as_str()),
                             Cell::new(format!("{}", &value.to_string().blue()).as_str()),
                         ]));
                     }
@@ -148,14 +147,16 @@ fn main() {
                         "Note: Both lowercase and uppercase letters hold equivalent value."
                             .dark_yellow()
                             .italic()
-                    ).unwrap();
+                    )
+                    .unwrap();
                 } else {
                     writeln!(
                         output_buffer,
                         "{}",
                         "Note: Both lowercase and uppercase letters hold equivalent value."
                             .dark_yellow()
-                    ).unwrap();
+                    )
+                    .unwrap();
                 }
             }
         }
@@ -216,13 +217,15 @@ fn main() {
                             output_buffer,
                             "{}",
                             format!("Value of {word:?}: {value}").blue().bold()
-                        ).unwrap();
+                        )
+                        .unwrap();
                     } else {
                         writeln!(
                             output_buffer,
                             "{}",
                             format!("Value of {word:?}: {value}").blue()
-                        ).unwrap();
+                        )
+                        .unwrap();
                     }
                 } else {
                     if decorations {
@@ -233,11 +236,7 @@ fn main() {
                         )
                         .unwrap();
                     } else {
-                        writeln!(
-                            output_buffer,
-                            "{}",
-                            format!("{word:?}: {value}").blue()
-                        ).unwrap();
+                        writeln!(output_buffer, "{}", format!("{word:?}: {value}").blue()).unwrap();
                     }
                 }
                 if !args.less && !args.raw {
@@ -271,11 +270,7 @@ fn main() {
                     )
                     .unwrap();
                 } else {
-                    writeln!(
-                        output_buffer,
-                        "{}",
-                        format!("Total Value: {total}").blue()
-                    ).unwrap();
+                    writeln!(output_buffer, "{}", format!("Total Value: {total}").blue()).unwrap();
                 }
             }
         }
@@ -298,7 +293,8 @@ fn main() {
                     output_buffer,
                     "{}",
                     "Note: Press Ctrl+C to exit.".dark_yellow()
-                ).unwrap();
+                )
+                .unwrap();
             }
         }
         let mut words = args.words.clone();
@@ -339,7 +335,9 @@ fn main() {
 
                 let mut input = String::new();
                 output_buffer.flush().unwrap();
-                stdin().read_line(&mut input).expect("error: Failed to read line");
+                stdin()
+                    .read_line(&mut input)
+                    .expect("error: Failed to read line");
 
                 // Trim the trailing newline character
                 input = input.trim().to_string();
@@ -371,7 +369,8 @@ fn main() {
                                 output_buffer,
                                 "{}",
                                 format!("Value of {word:?}: {value}").blue()
-                            ).unwrap();
+                            )
+                            .unwrap();
                         }
                     } else {
                         if decorations {
@@ -382,11 +381,8 @@ fn main() {
                             )
                             .unwrap();
                         } else {
-                            writeln!(
-                                output_buffer,
-                                "{}",
-                                format!("{word:?}: {value}\n").blue()
-                            ).unwrap();
+                            writeln!(output_buffer, "{}", format!("{word:?}: {value}\n").blue())
+                                .unwrap();
                         }
                     }
                     if !args.less && !args.raw {
@@ -418,13 +414,11 @@ fn main() {
                             output_buffer,
                             "{}",
                             format!("Total Value: {total}").blue().bold()
-                        ).unwrap();
+                        )
+                        .unwrap();
                     } else {
-                        writeln!(
-                            output_buffer,
-                            "{}",
-                            format!("Total Value: {total}").blue()
-                        ).unwrap();
+                        writeln!(output_buffer, "{}", format!("Total Value: {total}").blue())
+                            .unwrap();
                     }
                 }
 
@@ -439,7 +433,9 @@ fn main() {
 
                 output_buffer.flush().unwrap();
                 let mut input = String::new();
-                stdin().read_line(&mut input).expect("error: Failed to read line");
+                stdin()
+                    .read_line(&mut input)
+                    .expect("error: Failed to read line");
 
                 // Trim the trailing newline character
                 input = input.trim().to_string();
@@ -499,7 +495,8 @@ fn main() {
                             output_buffer,
                             "{}",
                             format!("Value of {word:?}: {value}").blue()
-                        ).unwrap();
+                        )
+                        .unwrap();
                     }
                 } else {
                     if decorations {
@@ -510,11 +507,7 @@ fn main() {
                         )
                         .unwrap();
                     } else {
-                        writeln!(
-                            output_buffer,
-                            "{}",
-                            format!("{word:?}: {value}").blue()
-                        ).unwrap();
+                        writeln!(output_buffer, "{}", format!("{word:?}: {value}").blue()).unwrap();
                     }
                 }
                 if !args.less && !args.raw {
@@ -548,11 +541,7 @@ fn main() {
                     )
                     .unwrap();
                 } else {
-                    writeln!(
-                        output_buffer,
-                        "{}",
-                        format!("Total Value: {total}").blue()
-                    ).unwrap();
+                    writeln!(output_buffer, "{}", format!("Total Value: {total}").blue()).unwrap();
                 }
             }
         }
@@ -561,7 +550,8 @@ fn main() {
         #[cfg(not(target_os = "windows"))]
         {
             // Enter alternate screen buffer
-            execute!(io::stdout(), EnterAlternateScreen).expect("error: Failed to create new screen buffer");
+            execute!(io::stdout(), EnterAlternateScreen)
+                .expect("error: Failed to create new screen buffer");
             // Clear the terminal
             execute!(io::stdout(), terminal::Clear(terminal::ClearType::All))
                 .expect("error: Failed to clear screen");
@@ -593,7 +583,8 @@ fn main() {
                         output_buffer,
                         "{}",
                         "Note: Press Ctrl+C to exit.".dark_yellow()
-                    ).unwrap();
+                    )
+                    .unwrap();
                 }
             }
             loop {
@@ -619,7 +610,8 @@ fn main() {
                                 output_buffer,
                                 "{}",
                                 format!("Value of {word:?}: {value}").blue()
-                            ).unwrap();
+                            )
+                            .unwrap();
                         }
                     } else {
                         if decorations {
@@ -630,11 +622,8 @@ fn main() {
                             )
                             .unwrap();
                         } else {
-                            writeln!(
-                                output_buffer,
-                                "{}",
-                                format!("{word:?}: {value}\n").blue()
-                            ).unwrap();
+                            writeln!(output_buffer, "{}", format!("{word:?}: {value}\n").blue())
+                                .unwrap();
                         }
                     }
                     if !args.less && !args.raw {
@@ -667,13 +656,9 @@ fn main() {
                             "{}",
                             format!("Total Value: {total}").blue().bold()
                         )
-                            .unwrap();
+                        .unwrap();
                     } else {
-                        writeln!(
-                            output_buffer,
-                            "{}",
-                            format!("Total Value: {total}").blue()
-                        )
+                        writeln!(output_buffer, "{}", format!("Total Value: {total}").blue())
                             .unwrap();
                     }
                 }
@@ -689,7 +674,9 @@ fn main() {
 
                 output_buffer.flush().unwrap();
                 let mut input = String::new();
-                stdin().read_line(&mut input).expect("error: Failed to read line");
+                stdin()
+                    .read_line(&mut input)
+                    .expect("error: Failed to read line");
 
                 // Trim the trailing newline character
                 input = input.trim().to_string();
